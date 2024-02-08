@@ -1,0 +1,168 @@
+libraries to install:
+    - pybluez https://github.com/pybluez/pybluez.git
+    - customtkinter
+    - tkinter
+    - pywin32
+    - simpleaudio
+    - Pillow (PIL)
+    - Numpy
+    - ffmpeg
+    - django-commands
+
+
+Look into:
+    - converting bt to rest api
+        - no need for bt
+        - people might not have bt receiver
+        - but would most likely have internet if they are tryin to use this application
+    - Database for managing sounds
+    - user information will have to be hosted
+
+
+
+
+
+
+
+
+
+
+
+
+updates from 2.7.24
+    - WOOOHOOO we are back!
+    - Decided to use rest api through AWI services
+    - need to completely revamp the system
+    - also got Chad on board so he will start working on this project
+    - got a lot to do but excited to get it done
+    - currently working on creating a revamped server.py and gui.py
+    - gui.py needs a login page and server.py needs to incoporate flask to create an endpoint
+    - Need to also create a demo program outside the scope of this environment to simulate
+      the mobile device
+    - Mobile UI will probably come at the very end
+    - added a very basic login page to gui to test
+
+updates from 9.29.23
+    - I have still been at this and UGH it drives me crazy
+    - I think I'm making progress but only time will tell
+    - I think I just need to fix the start_receiving line in gui.py
+    - I debugged and got it to work a little further this time
+    - I hope next time I update these notes I will be done with it
+
+updates from 9.26.23
+    - So I guess im not as close as I thought
+    - I fixed the flag issue. Essentially since I don't have the pipe problem solved,
+      I couldn't delete the flag file when done, leaving it on a true state when it
+      would run the next time, causing the program to not by synchronized
+    - I am now going to approach the pipe problem. Going to scrap everything I had before
+      and use a different method. Instead of using win32pipe (I used that because I thought that
+      was the only way pipes would work on windows (dumbskis)) I am going to use the Pipe class
+      from Multiprocessing library. This should work as I made a test file, and it is going smoothly
+      (see pipeTest.py (probably won't be on GitHub, but I will keep a copy locally)
+    - ok yeah so that didn't work because the Connection object needs to be a tuple
+    - Maybe I can implement it in main.py
+    - NOPE I essentially have to revert
+
+updates from  9.25.23
+    - I'M SO CLOSE
+    - right now just fixing the flag to delete on start if it exists
+
+updates from 9.22.23
+    - the end of this pipe issue is near... I CAN FEEL IT
+    - created a new class to handle the pipe (just like my showrty)
+                OMG NEW IDEA I SHOULD CALL THE CLASS SHAWTY
+                SO I CAN SAY "Yeah, shawty handles the pipe" lmao that'd be hilarious
+    - learned about explicit synchronization using flag files
+        - need to implement that once I figure out WHAT'S GOING ON (crazy frog music starts playing)
+    - I made a bunch of print commands and the issue is happening with how long
+      it takes to create the server and connect to the server. Since it's a duplex pipe
+      meaning it is bidirectional, I tried switching where the pipe is being created, but it
+      didn't really change anything.
+    - I tried syncing the programs when server.py was still creating the pipe but the loop for
+      the syncing in gui.py would infinitely run, and it seemed like server.py was waiting for gui.py
+    - Need to try having gui.py create the pipe and server waits on the flag WE SHALL SEE
+
+updates from 9.21.23
+    - still working on creating a proper terminate button so that pipes don't
+      corrupt or not delete on close
+      I Am working on creating a bidirectional pipe. Got errors gone, but now
+      I need to figure out why the messages aren't sending
+
+Updates from 9.19.23
+    - No longer requires hard-coding in bluetooth address
+      or directory for server.py and main.py
+    - fixed playback issue (volume works and is clear)
+    - working on creating a proper terminate button so
+      the pipes can be closed
+        - this will require core system redesign (or maybe not)
+        - I might just have to create another pipe from gui.py to server.py to send a message
+
+
+
+Issue: Cannot get server to update messages into the GUI
+Idea:   Use a pipe
+                - A pipe passes the results of one method to another method.
+                - A pipe is a section of shared memory that processes use
+                  for communication. The process that creates a pipe is the
+                  pipe server. A process that connects to a pipe is a pipe client.
+                  One process writes information to the pipe, then the other
+                  process reads the information from the pipe.
+
+Solution:     Use pywin34 to implement an anonymous pipe to allow a one way system
+              to send the status messages of the server to the gui
+
+
+
+Issue: Where to put audio playing logic?
+Idea: Multiple solutions each with their own pros and cons
+                1. Embedd implentation through server.py
+                    pros:
+                        - will be directly receiving messages from the bluetooth connection
+                          meaning even if gui fails, sounds will still be working.
+                        - doesn't require to pipe any more information aside from status updates
+                          to the gui
+                    cons:
+                        - might make the server file a little messy
+                            - maybe we can create a new class that the server reads and runs the
+                              right method to play sound
+                2. create new program to handle sound
+                    pros:
+                        - organized code?
+                    cons:
+                        - will need more pipes
+                        - will need to be added in the multiprocessing chain
+                3. Embedd implentation through gui.py
+                    pros:
+                        - does not need anymore pipes
+                        - can make the click button for the soundboard work directly through that
+                    cons:
+                        - Doesn't feel right that the sound is handled in the gui
+Solution:
+         Create a new class for the audio and implement that using inheritance into and gui.py
+
+
+issue: Implementation method of audio player
+        - New class and create methods for playing audio to be implemented in server.py and gui.py
+        - use a hashtable to order the audio playlists and then maybe use logic operations instead of
+          encoding -> BT -> decode (from client to server) -> encode -> pipe -> decode (from server.py to gui.py)
+          and make it instead
+          encoding -> BT -> decode (from client to server) -> pipe (from server.py to gui.py)
+
+
+
+issue: configuring example customTkinter into what I need
+Solution: removal of unneeded widgets and implementing status update
+To remove:
+      - remove horizontal slider bar
+      - remove the text entry and CTkButton at bottom
+      - default the ui theme to the correct setting when opening
+      - the stupid bouncing horizontal line (like fr wtf is that for)
+        ((loading i guess))
+      - radio button box frame
+      - check box frame
+To implement:
+      - remove tab view from its location but figure out how to
+        implement that to the sidebar to be able to change to
+        the dashboard, setting, and audio DnD
+      - (?) from scrollable switches remove switches and maybe
+        add in some default audio files to use for SB when installed
