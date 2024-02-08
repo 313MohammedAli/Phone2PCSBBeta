@@ -10,8 +10,6 @@ ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 print("gui.py started")
 
-#test
-
 class MessageApp(customtkinter.CTk):
     def __init__(self, q):
         super().__init__()
