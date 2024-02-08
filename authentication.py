@@ -40,10 +40,11 @@ def prompt_for_attribute(attribute_name):
 
 def authenticate_user(username, password):
     client = boto3.client('cognito-idp', region_name='us-east-2')
+    CLIENTID = '5lsps85k8pmmoei74avaevt7b5'
 
     try:
         auth_response = client.initiate_auth(
-            ClientId='47gg6er06v94205krc1gm5bpaq',
+            ClientId=CLIENTID,
             AuthFlow='USER_PASSWORD_AUTH',
             AuthParameters={
                 'USERNAME': username,
@@ -58,7 +59,7 @@ def authenticate_user(username, password):
                 phone_number = prompt_for_attribute('phone_number')  # Assuming you have already modified this function
 
                 auth_response = client.respond_to_auth_challenge(
-                    ClientId='47gg6er06v94205krc1gm5bpaq',
+                    ClientId=CLIENTID,
                     ChallengeName='NEW_PASSWORD_REQUIRED',
                     Session=auth_response['Session'],
                     ChallengeResponses={
@@ -73,7 +74,7 @@ def authenticate_user(username, password):
                 mfa_code = prompt_for_mfa_code()
 
                 auth_response = client.respond_to_auth_challenge(
-                    ClientId='47gg6er06v94205krc1gm5bpaq',
+                    ClientId=CLIENTID,
                     ChallengeName='SMS_MFA',
                     Session=auth_response['Session'],
                     ChallengeResponses={

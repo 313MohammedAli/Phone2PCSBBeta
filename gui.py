@@ -179,22 +179,13 @@ class MessageApp(customtkinter.CTk):
     def attempt_login(self):
         username = self.entry_username.get()
         password = self.entry_password.get()
+        auth_response = authentication.authenticate_user(username, password)
 
-
-        if authentication.authenticate_user(username, password) == 'Authentication Successful':
+        if auth_response is not None and 'AuthenticationResult' in auth_response:
             self.login_window.destroy()  # Close login window
             self.show_main_window()  # Show the main application window
-
         else:
             messagebox.showerror("Login failed", "Invalid username or password", parent=self.login_window)
-
-
-        # Here, add your actual login verification logic
-        #if username == "admin" and password == "password":  # Example credentials
-        #    self.login_window.destroy()  # Close login window
-        #    self.show_main_window()  # Show the main application window
-        #else:
-        #    messagebox.showerror("Login failed", "Invalid username or password", parent=self.login_window)
 
     def show_main_window(self):
         self.deiconify()  # Show the main application window
@@ -208,7 +199,6 @@ class MessageApp(customtkinter.CTk):
     def load_custom_font(self, font_path):
         pyglet.font.add_file(font_path)
         return [pyglet.font.have_font('Font Name')]
-
 
     def playSound(self, num, volume):
         jukebox_dir = 'jukebox'
