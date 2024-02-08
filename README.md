@@ -52,4 +52,5 @@ Mohammed Ali - mohammedsyedali18@gmail.com
 
 Project Link: [https://github.com/313MohammedAli/Phone2PCSBBeta]
 
+Trello Link: [https://trello.com/b/nmkREnV0/p2pcsb]
 
