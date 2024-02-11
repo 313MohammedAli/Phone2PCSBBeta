@@ -11,8 +11,6 @@ def run_gui(q):
     import gui  # Assuming gui.py is refactored to a module
     gui.main(q)  # main is a new function in gui.py that takes a queue 
 
-#Test
-
 
 if __name__ == "__main__":
     with Manager() as manager:
