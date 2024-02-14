@@ -1,36 +1,69 @@
-import bluetooth
-import time
-import re
+import boto3
+import datetime
+import json
+
+
+# Create an SQS client
+sqs = boto3.client('sqs',
+                   region_name='us-east-2',
+                   aws_access_key_id='AKIAVRUVQUKNSG2LPP66',
+                   aws_secret_access_key='HZv8mmuLSgs7tDYh9vZSdbTo2oPcr/Wizvk808nA'
+                   )
+
+# Specify your queue URL
+queue_url = 'https://sqs.us-east-2.amazonaws.com/381491913371/demoQueue'
+
+# Extract button code from json response
+# Pass the string from the body of the message and return string
+def extractCode(message):
+    # convert string to json
+    body = json.loads(message)
+    # Extract the value of Message key
+    msg = body['Message']
+    # Convert value of Message into json
+    msg1 = json.loads(msg)
+    # Extract the value of body key
+    msg2 = msg1['body']
+    # Convert the value of body to json
+    msg3 = json.loads(msg2)
+    # Extract value of code key
+    msg4 = msg3['code']
+    # return as a string
+    return msg4
+
+
+
 def main(q):
-    import uuid
+    def read_messages():
+        # Receive message from SQS queue
+        response = sqs.receive_message(
+            QueueUrl=queue_url,
+            AttributeNames=['All'],
+            MaxNumberOfMessages=10,  # adjust this number as needed
+            WaitTimeSeconds=5  # long polling, up to 20 seconds
+        )
 
-    print("Server.py started")
-    bt_mac = str(':'.join(re.findall('..', '%012x' % uuid.getnode())).encode())
+        messages = response.get('Messages', [])
+        if not messages:
+            print(f"No messages received at {datetime.datetime.now()}")
+            return
 
-    # formatting address
-    bt_mac = bt_mac[1:]
-    bt_mac = bt_mac.replace("'", "")
+        for message in messages:
+            # extract code from json message
+            code = extractCode(message['Body'])
 
-    # Initial Setup for Bluetooth, creating a socket, and binding to a Bluetooth adapter
-    server_socket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-    server_socket.bind((bt_mac, bluetooth.PORT_ANY))
-    server_socket.listen(1)
+            print("Message ID:", message['MessageId'])
+            print("Message Body:", code)
+            print("Time: ", datetime.datetime.now())
+            q.put(code)
+            print(f"Succesfully put code {code} into queue")
 
-    # UUID is just an identifier for Bluetooth connection
-    uuid = "00001101-0000-1000-8000-00805F9B34FB"  # SPP
-    bluetooth.advertise_service(server_socket, "SampleServerL2CAP", service_id=uuid, service_classes=[uuid])
+            # Delete received message from queue
+            receipt_handle = message['ReceiptHandle']
+            sqs.delete_message(
+                QueueUrl=queue_url,
+                ReceiptHandle=receipt_handle
+            )
 
     while True:
-        print("Waiting for incoming connection...")
-        ## pipe.send_message('Waiting for incoming connection...')
-        q.put("Waiting for incoming connection...")
-        time.sleep(4)
-        ## pipe.send_message("Mannn this connection takin so long")
-        q.put("Mannn this connection takin so long")
-        time.sleep(4)
-
-        q.put("4")
-        time.sleep(3)
-        ## pipe.send_message("bruh")
-
-    server_socket.close()
+        read_messages()
