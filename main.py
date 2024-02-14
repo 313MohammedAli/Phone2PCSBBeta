@@ -4,9 +4,6 @@ def run_server(q):
     import server  # Assuming server.py is refactored to a module
     server.main(q)  # main is a new function in server.py that takes a queue
 
-
-
-
 def run_gui(q):
     import gui  # Assuming gui.py is refactored to a module
     gui.main(q)  # main is a new function in gui.py that takes a queue
