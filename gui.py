@@ -10,10 +10,12 @@ ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 print("gui.py started")
 
+ID_TOKEN = ''
+
 class MessageApp(customtkinter.CTk):
     def __init__(self, q):
         super().__init__()
-        self.create_login_window()  # Call to create the login window
+        # self.create_login_window()  # Call to create the login window
         self.create_main_window(q)
 
     def create_main_window(self, q):
@@ -151,43 +153,6 @@ class MessageApp(customtkinter.CTk):
         self.progressbar_1.start()
         self.seg_button_1.configure()
 
-    def create_login_window(self):
-        # Create a new window for the login
-        self.login_window = ctk.CTkToplevel(self)
-        self.login_window.title("Login")
-        self.login_window.geometry("300x200")
-
-        # Username field
-        ctk.CTkLabel(self.login_window, text="Username:").pack(pady=(20, 0))
-        self.entry_username = ctk.CTkEntry(self.login_window)
-        self.entry_username.pack(pady=(0, 20))
-
-        # Password field
-        ctk.CTkLabel(self.login_window, text="Password:").pack()
-        self.entry_password = ctk.CTkEntry(self.login_window, show="*")
-        self.entry_password.pack(pady=(0, 20))
-
-        # Login button
-        self.login_button = ctk.CTkButton(self.login_window, text="Login", command=self.attempt_login)
-        self.login_button.pack()
-
-        # Initially, hide the main window until login is successful
-        self.withdraw()
-
-    def attempt_login(self):
-        username = self.entry_username.get()
-        password = self.entry_password.get()
-        auth_response = authentication.authenticate_user(username, password)
-
-        if auth_response is not None and 'AuthenticationResult' in auth_response:
-            self.login_window.destroy()  # Close login window
-            self.show_main_window()  # Show the main application window
-        else:
-            messagebox.showerror("Login failed", "Invalid username or password", parent=self.login_window)
-
-    def show_main_window(self):
-        self.deiconify()  # Show the main application window
-        # You can initialize or refresh the main window content here if needed
 
     def check_queue(self):
         if not self.queue.empty():

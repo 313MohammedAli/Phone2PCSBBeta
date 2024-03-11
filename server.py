@@ -39,7 +39,7 @@ def main(q):
         response = sqs.receive_message(
             QueueUrl=queue_url,
             AttributeNames=['All'],
-            MaxNumberOfMessages=10,  # adjust this number as needed
+            MaxNumberO1fMessages=10,  # adjust this number as needed
             WaitTimeSeconds=5  # long polling, up to 20 seconds
         )
 
