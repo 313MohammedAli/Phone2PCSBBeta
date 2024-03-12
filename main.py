@@ -16,7 +16,7 @@ class LoginWindow:
         self.q = q
         self.root = ctk.CTk()
         self.root.title("Login")
-        self.root.geometry("300x200")
+        self.root.geometry("300x250")
 
         # Username field
         ctk.CTkLabel(self.root, text="Username:").pack(pady=(20, 0))
@@ -32,6 +32,16 @@ class LoginWindow:
         login_button = ctk.CTkButton(self.root, text="Login", command=self.attempt_login)
         login_button.pack()
 
+        # Test Credentials Button
+        test_creds_button = ctk.CTkButton(self.root, text="Fill Test Credentials", command=self.fill_test_credentials)
+        test_creds_button.pack(pady=(10, 0))  # Add some padding on the y-axis
+
+    def fill_test_credentials(self):
+        self.entry_username.delete(0, ctk.END)
+        self.entry_username.insert(0, "mohammedsyedali18@gmail.com")
+        self.entry_password.delete(0, ctk.END)
+        self.entry_password.insert(0, "DrMongo123!")
+
     def attempt_login(self):
         username = self.entry_username.get()
         password = self.entry_password.get()
@@ -40,6 +50,7 @@ class LoginWindow:
         if auth_response is not None and 'AuthenticationResult' in auth_response:
             messagebox.showinfo("Login Success", "You are now logged in.", parent=self.root)
             self.q.put("authenticated")  # Pass successful authentication message to queue
+            self.q.put(auth_response)
             self.root.destroy()  # Close login window
         else:
             messagebox.showerror("Login failed", "Invalid username or password", parent=self.root)

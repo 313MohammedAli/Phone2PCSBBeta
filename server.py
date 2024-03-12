@@ -2,15 +2,14 @@ import boto3
 import datetime
 import json
 
+regionName = 'us-east-2'
+identityPoolId = 'us-east-2:74dc5245-fd89-4280-9a4e-3a6a5a5d9d07'
+cognitoIdentityProvider = 'cognito-idp.us-east-2.amazonaws.com/us-east-2_ZKhJrBN4H'
+idToken = ''
 
-# Create an SQS client
-sqs = boto3.client('sqs',
-                   region_name='us-east-2',
-                   aws_access_key_id='AKIAVRUVQUKNSG2LPP66',
-                   aws_secret_access_key='HZv8mmuLSgs7tDYh9vZSdbTo2oPcr/Wizvk808nA'
-                   )
 
-# Specify your queue URL
+
+
 queue_url = 'https://sqs.us-east-2.amazonaws.com/381491913371/demoQueue'
 
 # Extract button code from json response
@@ -34,12 +33,66 @@ def extractCode(message):
 
 
 def main(q):
+    try:
+        auth_response = q.get(timeout=10)  # Adjust timeout as needed
+        print(f"Authentication response received: {auth_response}")
+        # Process authentication response as needed
+        ...
+    except q.Empty:
+        print("No authentication response received within timeout.")
+        return  # or continue depending on your use case
+    authResult = auth_response['AuthenticationResult']
+    idToken = authResult['IdToken']
+    print("ID Token: " + idToken)
+
+    # get temporary access token and secret access token
+    client = boto3.client('cognito-identity', region_name=regionName)
+
+    # Get ID for the authenticated user from Cognito Identity Pool
+    response = client.get_id(
+        IdentityPoolId=identityPoolId,
+        Logins={
+            cognitoIdentityProvider: idToken
+        }
+    )
+
+    identity_id = response['IdentityId']
+
+    # Get credentials for the authenticated user
+    creds_response = client.get_credentials_for_identity(
+        IdentityId=identity_id,
+        Logins={
+            cognitoIdentityProvider: idToken
+        }
+    )
+
+    # Extract the credentials
+    credentials = creds_response['Credentials']
+
+    # Use these credentials to access AWS services
+    accessKeyID = credentials['AccessKeyId']
+    secretAccessKey = credentials['SecretKey']
+    sessionToken = credentials['SessionToken']
+
+    print("Temporary Access Key ID: " + accessKeyID +
+          "\nSecret Acces Key ID: " + secretAccessKey +
+          "\nSession Token: " + sessionToken)
+
+
+    # Create an SQS client
+    sqs = boto3.client('sqs',
+                       region_name=regionName,
+                       aws_access_key_id=accessKeyID,
+                       aws_secret_access_key=secretAccessKey,
+                       aws_session_token=credentials['SessionToken'],
+                       )
+
     def read_messages():
         # Receive message from SQS queue
         response = sqs.receive_message(
             QueueUrl=queue_url,
             AttributeNames=['All'],
-            MaxNumberO1fMessages=10,  # adjust this number as needed
+            MaxNumberOfMessages=10,  # adjust this number as needed
             WaitTimeSeconds=5  # long polling, up to 20 seconds
         )
 
