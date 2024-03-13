@@ -31,7 +31,6 @@ def extractCode(message):
     return msg4
 
 
-
 def main(q):
     try:
         auth_response = q.get(timeout=10)  # Adjust timeout as needed
@@ -43,7 +42,9 @@ def main(q):
         return  # or continue depending on your use case
     authResult = auth_response['AuthenticationResult']
     idToken = authResult['IdToken']
-    print("ID Token: " + idToken)
+    header_part = idToken.split('.')[0] if idToken else ''
+    header_part = header_part + "."
+
 
     # get temporary access token and secret access token
     client = boto3.client('cognito-identity', region_name=regionName)
@@ -108,15 +109,19 @@ def main(q):
             print("Message ID:", message['MessageId'])
             print("Message Body:", code)
             print("Time: ", datetime.datetime.now())
-            q.put(code)
-            print(f"Succesfully put code {code} into queue")
+            if(code.startswith(header_part)):
+                trimmedcode = code[len(header_part):]
+                q.put(trimmedcode)
+                print(f"Succesfully put code {trimmedcode} into queue")
 
-            # Delete received message from queue
-            receipt_handle = message['ReceiptHandle']
-            sqs.delete_message(
-                QueueUrl=queue_url,
-                ReceiptHandle=receipt_handle
-            )
+                # Delete received message from queue
+                receipt_handle = message['ReceiptHandle']
+                sqs.delete_message(
+                    QueueUrl=queue_url,
+                    ReceiptHandle=receipt_handle
+                )
+            else:
+                print("Message for another user")
 
     while True:
         read_messages()

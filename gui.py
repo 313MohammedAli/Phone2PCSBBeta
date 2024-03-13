@@ -15,8 +15,10 @@ ID_TOKEN = ''
 class MessageApp(customtkinter.CTk):
     def __init__(self, q):
         super().__init__()
+        self.idToken = "NULL"
         # self.create_login_window()  # Call to create the login window
         self.create_main_window(q)
+
 
     def create_main_window(self, q):
         self.geometry(f"{1100}x{580}")
@@ -153,6 +155,10 @@ class MessageApp(customtkinter.CTk):
         self.progressbar_1.start()
         self.seg_button_1.configure()
 
+    def remove_prefix(text, prefix):
+        if text.startswith(prefix):
+            return text[len(prefix):]  # Remove the prefix by slicing from its end onwards
+        return text  # Return the original text if it doesn't start with the prefix
 
     def check_queue(self):
         if not self.queue.empty():
